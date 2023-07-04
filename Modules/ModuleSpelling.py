@@ -13,19 +13,20 @@ create table if not exists Spelling (
 createQuery(initSql)
 
 class CheckerSpelling:
+    runtimeCache = {}
+    wordCnt = {}
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"}
+    def wordcheck(self, word):
+        requestObj = requests.get("https://dictionary.cambridge.org/search/direct", params = {
+            "datasetsearch": "english",
+            "q": word
+        }, headers = self.headers)
+        url = requestObj.url
+        return "spellcheck" not in url
     def run(self):
         text = self.text
-        listOfWord = text.split()
-        listOfFinal = []
-        for x in listOfWord:
-            x = x.strip()
-            for y in string.punctuation:
-                if y == "'" or y == "-":
-                    pass
-                x = x.replace(y, "")
-            for z in range(len(x)):
-                if x[z] not in string.punctuation:
-                    break
-            x = x[z:]
-            for z in range(
+        for y in string.punctuation:
+            if y == "'":
+                continue
+            text = text.replace(y, " ")
+        listOfWord = [x.strip().strip("'") for x in text.split()]
