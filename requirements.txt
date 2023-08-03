@@ -1,4 +1,4 @@
 requests
-pywebview
-qtpy
-PySide2
+pyqt5
+PyQt-Fluent-Widgets[full]
+striprtf

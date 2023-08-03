@@ -61,13 +61,14 @@ def Start():
     for func in procStartList:
         func()
 
-def Shutdown(blocking = False):
+def Shutdown(hook = lambda: 0, blocking = False):
     global running
     running = False
     for func in procEndList:
         func()
     if blocking:
         WaitToDie()
+    sys.exit(hook())
 
 def WaitToDie():
     global runProc
@@ -78,14 +79,14 @@ exceptHook = sys.excepthook
 def newExceptHook(*args, **kwargs):
     exceptHook(*args, **kwargs)
     print("Shutdowning...")
-    Shutdown(True)
+    Shutdown(blocking = True, hook = lambda: -1)
     print("Shutdown gracefully")
 
 sys.excepthook = newExceptHook
 
-def run(func):
+def run(func, rethook=lambda: 0):
     global running
     Start()
     func()
     if running:
-        Shutdown()
+        Shutdown(hook = rethook)
