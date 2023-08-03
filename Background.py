@@ -1,7 +1,11 @@
-import sqlite3, queue, threading
+import sqlite3, queue, threading, sys
 from Modules import ModuleBase
 
 que = queue.Queue()
+running = False
+runProc = 0
+procStartList = []
+procEndList = []
 
 class Query:
     def __init__(self, proc):
@@ -13,9 +17,9 @@ class Query:
             pass
         return (self.ret, self.error)
 
-def createQuery(sql):
+def createQuery(sql, para = ()):
     def process(cursor):
-        cursor.execute(sql)
+        cursor.execute(sql, para)
         ret = cursor.fetchall()
         return ret
     queryobj = Query(process)
@@ -27,9 +31,13 @@ def createQuery(sql):
         return ret
 
 def Thread():
+    global runProc
+    runProc += 1
     database = sqlite3.connect("Data.db")
-    while True:
+    while running:
         f = que.get()
+        if f is None:
+            continue
         cursor = database.cursor()
         try:
             ret = f.proc(cursor)
@@ -39,6 +47,45 @@ def Thread():
         except Exception as e:
             f.ret = e
             f.error = True
-        
-threading.Thread(target=Thread).start()
-ModuleBase.createQuery = createQuery
+    database.close()
+    runProc -= 1
+
+
+procStartList.append(threading.Thread(target=Thread).start)
+procEndList.append(lambda: que.put(None))
+
+
+def Start():
+    global running
+    running = True
+    for func in procStartList:
+        func()
+
+def Shutdown(blocking = False):
+    global running
+    running = False
+    for func in procEndList:
+        func()
+    if blocking:
+        WaitToDie()
+
+def WaitToDie():
+    global runProc
+    while runProc:
+        pass
+
+exceptHook = sys.excepthook
+def newExceptHook(*args, **kwargs):
+    exceptHook(*args, **kwargs)
+    print("Shutdowning...")
+    Shutdown(True)
+    print("Shutdown gracefully")
+
+sys.excepthook = newExceptHook
+
+def run(func):
+    global running
+    Start()
+    func()
+    if running:
+        Shutdown()
