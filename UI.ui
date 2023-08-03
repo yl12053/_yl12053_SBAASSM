@@ -39,7 +39,7 @@
      <item>
       <widget class="QStackedWidget" name="stackedWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="Homepage">
         <widget class="QWidget" name="verticalLayoutWidget">
@@ -81,7 +81,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="tab">
              <attribute name="title">
@@ -295,7 +295,11 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <widget class="ProgressRing" name="ProgressRing"/>
+             <widget class="IndeterminateProgressRing" name="ProgressRing">
+              <property name="value">
+               <number>24</number>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -671,13 +675,13 @@
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>
-   <class>ProgressRing</class>
-   <extends>ProgressBar</extends>
+   <class>TextEdit</class>
+   <extends>QTextEdit</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>
-   <class>TextEdit</class>
-   <extends>QTextEdit</extends>
+   <class>IndeterminateProgressRing</class>
+   <extends>QProgressBar</extends>
    <header>qfluentwidgets</header>
   </customwidget>
  </customwidgets>
