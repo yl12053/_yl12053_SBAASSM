@@ -1,4 +1,8 @@
 import sqlite3, queue, threading, sys
+
+from PyQt5.QtCore import pyqtSignal, QCoreApplication
+from PyQt5.QtWidgets import QWidget
+
 from Modules import ModuleBase
 
 que = queue.Queue()
@@ -6,6 +10,8 @@ running = False
 runProc = 0
 procStartList = []
 procEndList = []
+
+exitFunc = sys.exit
 
 class Query:
     def __init__(self, proc):
@@ -63,26 +69,49 @@ def Start():
 
 def Shutdown(hook = lambda: 0, blocking = False):
     global running
+    print("Shutdown start")
     running = False
     for func in procEndList:
         func()
     if blocking:
         WaitToDie()
-    sys.exit(hook())
+    print("Done")
+    exitFunc(hook())
 
 def WaitToDie():
     global runProc
     while runProc:
         pass
 
-exceptHook = sys.excepthook
-def newExceptHook(*args, **kwargs):
-    exceptHook(*args, **kwargs)
-    print("Shutdowning...")
-    Shutdown(blocking = True, hook = lambda: -1)
-    print("Shutdown gracefully")
+def threadWrapper(func):
+    global runProc
+    def wrap(*args, **kwargs):
+        global runProc
+        b = None
+        runProc += 1
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            print("Wrapper have caught an exception: %s"%str(e))
+            b = e
+        finally:
+            runProc -= 1
+        if isinstance(b, Exception):
+            raise b
 
-sys.excepthook = newExceptHook
+    return wrap
+
+def genericEHook(func):
+    def newExceptHook(*args, **kwargs):
+        func(*args, **kwargs)
+        print("Unhandled error caught, Shutting down...")
+        Shutdown(blocking = True, hook = lambda: 1)
+        print("Shutdown gracefully")
+    return newExceptHook
+
+
+sys.excepthook = genericEHook(sys.excepthook)
+threading.excepthook = genericEHook(threading.excepthook)
 
 def run(func, rethook=lambda: 0):
     global running
@@ -90,3 +119,9 @@ def run(func, rethook=lambda: 0):
     func()
     if running:
         Shutdown(hook = rethook)
+
+def mround(n, digits):
+    p = round(n, digits)
+    if p == int(p):
+        return int(p)
+    return p

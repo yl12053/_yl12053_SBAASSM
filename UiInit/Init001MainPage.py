@@ -1,9 +1,20 @@
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QApplication, QWidget, QAction
 from PyQt5.QtCore import Qt
-from qfluentwidgets import InfoBar, InfoBarPosition
 from FileReader import Support
-import importlib
+import importlib, threading
 from qfluentwidgets import FluentIcon
+import checker
+import queue
+import os
+from qfluentwidgets import (
+    InfoBar,
+    InfoBarPosition,
+    ExpandSettingCard,
+    ScrollArea,
+    ExpandLayout,
+    SettingCardGroup,
+)
+from PyQt5.QtCore import pyqtSignal
 
 def textChanged(ui):
     text = ui.TextEdit.toPlainText()
@@ -12,7 +23,7 @@ def textChanged(ui):
     ui.PrimaryPushButton.setEnabled(len(text))
 
 def openFile(ui):
-    files = QFileDialog.getOpenFileName(None, "Open file", "c:\\", " ".join(map(lambda x: "*."+x, Support.support)))
+    files = QFileDialog.getOpenFileName(None, "Open file", os.getcwd(), " ".join(map(lambda x: "*."+x, Support.support)))
     if not files[0]:
         ui.PrimaryPushButton_3.setEnabled(False)
         return
@@ -34,12 +45,93 @@ def openFile(ui):
         ui.label_7.setText("File selected: %s\nFormat: %s\nWord Count: %d"%(filename, fmt, len(rtc.split())))
         ui.PrimaryPushButton_3.setEnabled(True)
 
+class Exposure(ExpandSettingCard):
+    par = None
+    def adjustViewSize(self):
+        self._adjustViewSize()
+
+class ViewScroll(ScrollArea):
+
+    types = Exposure
+    addsig = pyqtSignal()
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.localwidget = QWidget()
+        self.expand = ExpandLayout(self.localwidget)
+        self.expand.setAlignment(Qt.AlignTop)
+        self.itms = []
+
+    def add(self, ico, title):
+        self.itms.append(Exposure(ico, title, None, self.localwidget))
+        return self.itms[-1]
+
+    def addGroup(self, title):
+        self.itms.append(SettingCardGroup(title, self.localwidget))
+        return self.itms[-1]
+
+    def show(self):
+        self.resize(1000, 800)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setViewportMargins(0, 0, 0, 20)
+        self.setWidget(self.localwidget)
+        self.setWidgetResizable(True)
+        self.expand.setSpacing(28)
+        self.expand.setContentsMargins(60, 0, 60, 0)
+        for d in self.itms:
+            self.expand.addWidget(d)
+
 def submitA(ui):
     ui.Page1Text = ui.TextEdit.toPlainText()
     submitB(ui)
 
 def submitB(ui):
+    if hasattr(ui, "interface"):
+        ui.horizontalLayout_7.removeWidget(ui.interface)
+        ui.interface.setParent(None)
+    ui.interface = ViewScroll(ui.widget)
+    ui.horizontalLayout_7.addWidget(ui.interface)
     ui.stackedWidget.setCurrentIndex(1)
+    class TObj:
+        def __init__(self, func):
+            self.f = func
+            self.r = None
+            self.e = False
+            self.d = False
+
+        def getResult(self):
+            while not self.d:
+                pass
+            if self.e:
+                raise self.r
+            else:
+                return self.r
+
+        def setResult(self, r, e):
+            self.r = r
+            self.e = e
+            self.d = True
+    q = queue.Queue()
+    def wrap(f):
+        obj = TObj(f)
+        q.put(obj)
+        return obj.getResult()
+
+    def end():
+        q.put(None)
+
+    threading.Thread(target=checker.check, args=(ui, wrap, end)).start()
+    while True:
+        try:
+            f = q.get_nowait()
+            if f is None:
+                break
+            try:
+                f.setResult(f.f(), False)
+            except Exception as e:
+                f.setResult(e, True)
+        except queue.Empty:
+            pass
+        QApplication.processEvents()
 
 def Init(obj):
     ui = obj.ui

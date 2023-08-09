@@ -1,5 +1,0 @@
-https://dictionary.cambridge.org/search/direct/?datasetsearch=english&q={}
-
-
-https://dictionary.cambridge.org/spellcheck/english/?q={invalid}
-https://dictionary.cambridge.org/dictionary/english/o-clock?q={valid}

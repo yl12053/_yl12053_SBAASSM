@@ -1,12 +1,14 @@
 class CheckerBase:
     tuneOpt = []
 
-    def __init__(self, compo):
+    def __init__(self, compo, callback = lambda x: None):
         self.compo = compo
-        self.run()
 
     def run(self):
         raise NotImplementedError()
+
+    def getDesc(self):
+        return self._desc
 
 class Tuner:
     def __init__(self):
@@ -24,3 +26,6 @@ class TunerWordSet(Tuner):
     def __init__(self, name, n=0, x=None):
         self.name = name
         self.val = set()
+
+InitSetting = None
+getNewSlot = None

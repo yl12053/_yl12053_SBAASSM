@@ -1,10 +1,11 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFontDatabase
-import sys, os
+import sys
 from qfluentwidgets import qrouter, NavigationItemPosition
 from UIM import Ui_MainWindow
 
 class GUI:
+    normProc = True
 
     def defaultOnclick(self, func):
         if self.ui.lock():
@@ -40,9 +41,17 @@ class GUI:
 
     refine = lambda self: None
 
-    def exit(self):
-        sys.exit(self.app.exec_())
+    def exit(self, code=None):
+        if code is None:
+            code = self.app.exec_()
+        sys.exit(code)
+
+    def forceQuit(self, code=0):
+        self.normProc = False
+        self.app.exit(code)
+        sys.exit(code)
 
     def launch(self):
         self.window.show()
-        self.exit()
+        if self.normProc:
+            self.exit()

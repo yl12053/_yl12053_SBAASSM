@@ -8,15 +8,16 @@ def wrapper():
     def main():
         from UI import GUI
         class BGUI(GUI):
-            def exit(self):
-                returnValue[0] = self.app.exec_()
+            def exit(self, code=None):
+                if code is None:
+                    code = self.app.exec_()
+                returnValue[0] = code
             def refine(self):
-                for suspect in sorted(os.listdir(list(UiInit.__path__)[0])):
-                    if suspect.startswith("Init"):
-                        print("Loading %s"%suspect)
-                        moduleName = suspect.rsplit(".", 1)[0]
-                        importlib.import_module("UiInit.%s"%moduleName)
-                        getattr(UiInit, moduleName).Init(self)
+                for suspect in UiInit.members:
+                    print("Loading %s"%suspect)
+                    moduleName = suspect.rsplit(".", 1)[0]
+                    importlib.import_module("UiInit.%s"%moduleName)
+                    getattr(UiInit, moduleName).Init(self)
 
             def launch(self):
                 qrouter.setDefaultRouteKey(self.ui.stackedWidget, self.ui.Homepage.objectName())
@@ -26,6 +27,7 @@ def wrapper():
                 super().launch()
 
         MainWindow = BGUI()
+        Background.exitFunc = MainWindow.forceQuit
         MainWindow.launch()
 
 

@@ -2,3 +2,8 @@ requests
 pyqt5
 PyQt-Fluent-Widgets[full]
 striprtf
+sip
+bezier
+numpy
+matplotlib
+sympy
