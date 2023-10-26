@@ -16,19 +16,27 @@ from qfluentwidgets import (
 )
 from PyQt5.QtCore import pyqtSignal
 
+#Call back function to update label and allow composition submit if and only if text is begin inputted
 def textChanged(ui):
     text = ui.TextEdit.toPlainText()
     ui.label_4.setText("Word Count: " + str(len(text.split())))
     ui.PushButton.setEnabled(len(text))
     ui.PrimaryPushButton.setEnabled(len(text))
 
+#procedure for file open and read
 def openFile(ui):
+    #Call OS' Native File Dialog, filetype was limited here
     files = QFileDialog.getOpenFileName(None, "Open file", os.getcwd(), " ".join(map(lambda x: "*."+x, Support.support)))
+    #No file is selected
     if not files[0]:
+        #Not allowing submit
         ui.PrimaryPushButton_3.setEnabled(False)
         return
+    #Get filename
     filename = files[0]
+    #Get file type
     fmt = filename.rsplit(".", 1)[1].lower()
+    #Try to import corresponding file reader by filetype
     rtv, rtc = importlib.import_module("FileReader.%s"%fmt).process(filename)
     if rtv:
         InfoBar.error(
@@ -45,11 +53,14 @@ def openFile(ui):
         ui.label_7.setText("File selected: %s\nFormat: %s\nWord Count: %d"%(filename, fmt, len(rtc.split())))
         ui.PrimaryPushButton_3.setEnabled(True)
 
+#Inherited from qfluentwidgets.ExpandSettingCard
+#Aim to expose private method _adjustViewSize to public
 class Exposure(ExpandSettingCard):
     par = None
     def adjustViewSize(self):
         self._adjustViewSize()
 
+#Visual element to render output
 class ViewScroll(ScrollArea):
 
     types = Exposure
@@ -80,10 +91,12 @@ class ViewScroll(ScrollArea):
         for d in self.itms:
             self.expand.addWidget(d)
 
+#a pre-requisite submit procedure for manual input to convert textarea into str type
 def submitA(ui):
     ui.Page1Text = ui.TextEdit.toPlainText()
     submitB(ui)
 
+#remove all possible 
 def submitB(ui):
     if hasattr(ui, "interface"):
         ui.horizontalLayout_7.removeWidget(ui.interface)
