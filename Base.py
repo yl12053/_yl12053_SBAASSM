@@ -1,3 +1,4 @@
+#Base class for inherit, reserved for future update
 class CompositionBase:
     def __init__(self, text):
         self.text = text
