@@ -104,13 +104,19 @@ def submitB(ui):
     ui.interface = ViewScroll(ui.widget)
     ui.horizontalLayout_7.addWidget(ui.interface)
     ui.stackedWidget.setCurrentIndex(1)
+    #Custom task object
     class TObj:
         def __init__(self, func):
+            #Function
             self.f = func
+            #Return
             self.r = None
+            #Error
             self.e = False
+            #Task have done
             self.d = False
 
+        #Get result, blocking
         def getResult(self):
             while not self.d:
                 pass
@@ -119,19 +125,24 @@ def submitB(ui):
             else:
                 return self.r
 
+        #Set result, calling from thread
         def setResult(self, r, e):
             self.r = r
             self.e = e
             self.d = True
     q = queue.Queue()
+
+    #Function wrapper of a cross-thread call where the function execute in current thread
     def wrap(f):
         obj = TObj(f)
         q.put(obj)
         return obj.getResult()
 
+    #End function, by putting a None
     def end():
         q.put(None)
 
+    #Thread start
     threading.Thread(target=checker.check, args=(ui, wrap, end)).start()
     while True:
         try:
@@ -146,14 +157,19 @@ def submitB(ui):
             pass
         QApplication.processEvents()
 
+#Init function for page 1, called from outside (as a module)
 def Init(obj):
     ui = obj.ui
+    #Widgets initialization
     ui.PrimaryPushButton.setEnabled(False)
     ui.PushButton.setEnabled(False)
     ui.PrimaryPushButton_3.setEnabled(False)
     ui.TextEdit.textChanged.connect(lambda: textChanged(ui))
+    #Clear
     ui.PushButton.clicked.connect(lambda: ui.TextEdit.setText(""))
+    #Submit and read file
     ui.PrimaryPushButton_2.clicked.connect(lambda: openFile(ui))
     ui.PrimaryPushButton.clicked.connect(lambda: submitA(ui))
     ui.PrimaryPushButton_3.clicked.connect(lambda: submitB(ui))
+    #Add to sidebar
     obj.addmenu(ui.Homepage,FluentIcon.EDIT,"Homepage")
