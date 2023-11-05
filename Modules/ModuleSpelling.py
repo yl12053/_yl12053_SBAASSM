@@ -9,6 +9,13 @@ import string
 
 from Background import mround
 
+#Create a SQLite table
+#Name: Spelling
+#Columns:
+#    (text) Word
+#    (int) Correct
+#    (float/real) Timeout
+#Primary key: Word
 initSql = """
 create table if not exists Spelling (
     Word text,
