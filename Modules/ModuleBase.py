@@ -1,3 +1,4 @@
+#Base class for a checker
 class CheckerBase:
     tuneOpt = []
 
@@ -9,7 +10,8 @@ class CheckerBase:
 
     def getDesc(self):
         return self._desc
-
+        
+#Base class for a tuner, preserved for future update
 class Tuner:
     def __init__(self):
         raise NotImplementedError()
