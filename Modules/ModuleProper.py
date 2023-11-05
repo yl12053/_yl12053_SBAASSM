@@ -9,29 +9,37 @@ import string
 from Background import mround
 
 class CheckerProper(CheckerBase):
+    #Description (Private attribute)
     _desc = "Usage of Capital Letters"
     tuneAccept = []
     freql = {}
     wnum = 0
 
+    #Run function (commonly found in all checker)
     def run(self, callback=lambda x: None):
+        #Case (to be checked) count
         self.cnt = 0
+        #Correct number
         self.corr = 0
         texts = self.compo.text.split("\n")
         while "" in texts:
+            #Removing empty lines
             texts.remove("")
         pgc = 0
         for d in texts:
             pgc += 1
+            #Init flag
             flag = True
             t = d.split()
             wc = 0
             for word in t:
                 wc += 1
                 repl = word
+                #Remove all possible punctuation in word (such as ')
                 for p in string.punctuation:
                     repl = repl.replace(p, "")
                 if flag:
+                    #This is sentence start
                     self.cnt += 1
                     if 'A' <= repl[0] <= 'Z':
                         self.corr += 1
@@ -40,15 +48,20 @@ class CheckerProper(CheckerBase):
                 for p in string.punctuation:
                     if p in [".", "?", "!"]:
                         continue
+                    #Remove all punctuation except ., ?, ！
                     repl2 = repl2.replace(p, "")
+                #Check if sentence end
                 if repl2.endswith(".") or repl2.endswith("?") or repl2.endswith("!"):
                     flag = True
                 self.progress = (pgc - 1) / len(texts) + wc / len(word) / len(texts)
+                #Update progress bar
                 callback(self)
         self.progress = 1
         callback(self)
         self.compo.setMark(self)
 
+
+    #Rendering result
     def render(self, ui, wrapper):
         def newCard(title, cont, slt):
             settingCard = wrapper(
@@ -72,6 +85,7 @@ class CheckerProper(CheckerBase):
         wrapper(lambda: ui.interface.expand.addWidget(slot))
         print("Registered")
 
+    #Configuring export item
     def export(self):
         return {"Spelling Mistake": [
             ["Marks", self.m],
