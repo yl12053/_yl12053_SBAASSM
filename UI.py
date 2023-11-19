@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFontDatabase
-import sys
+import sys, os
 from qfluentwidgets import qrouter, NavigationItemPosition
 from UIM import Ui_MainWindow
 
@@ -38,7 +38,7 @@ class GUI:
         #Create window
         self.app = QtWidgets.QApplication(sys.argv)
         #Map font to Qt resource
-        id = QFontDatabase.addApplicationFont("AGENCYR.ttf")
+        id = QFontDatabase.addApplicationFont(os.path.join(["", getattr(sys, "_MEIPASS", "")][getattr(sys, 'frozen', False)], "AGENCYR.ttf")) #Tricky way to compat bundled resources since Python will treet True as 1 and False as 0
         families = QFontDatabase.applicationFontFamilies(id)
         #Link window
         self.window = QtWidgets.QMainWindow()
